@@ -1,9 +1,6 @@
 #------------------------------------------------------------------------------
 #
-# Makefile, approach 1
-# * automatic variables expose the redundancy of boilerplate code 
-# * override concept illustrated
-# * CC "redefined" but actually not
+# Makefile, approach 2
 #
 #------------------------------------------------------------------------------
 #
@@ -12,36 +9,31 @@
 #
 #------------------------------------------------------------------------------
 
-# make CC=clang CFLAGS="-g -O0" -f makefile.v1.mak
-# make -f makefile.v1.mak clean
-# make -f makefile.v1.mak
-# make -f makefile.v1.mak testrun
-# make -f makefile.v1.mak clean
+# make CC=clang CFLAGS="-g -O0" -f makefile.v2.mak
+# make -f makefile.v2.mak clean
+# make -f makefile.v2.mak
+# make -f makefile.v2.mak testrun
+# make -f makefile.v2.mak clean
 
-CC ?= gcc
+ifeq ($(origin CC),default)
+  CC = gcc
+endif
+
 CFLAGS ?= -O2
 COMMONINC = -I./include
 TESTS = ./Tests
+SRC = ./source
 
 override CFLAGS += $(COMMONINC)
 
-.PHONY: all
-all: LC.x
+CSRC = LCmain.c source/cache.c source/hash.c source/list.c
+COBJ = LCmain.o cache.o hash.o list.o
 
-LC.x: LCmain.o cache.o hash.o list.o
+%.o : source/%.c
+	$(CC) $(CFLAGS) -c $^ -o $@
+
+LC.x: $(COBJ)
 	$(CC) $^ -o $@ $(LDFLAGS)
-
-LCmain.o: LCmain.c
-	$(CC) $(CFLAGS) -c $^ -o $@
-
-cache.o: ./source/cache.c
-	$(CC) $(CFLAGS) -c $^ -o $@
-
-hash.o: ./source/hash.c
-	$(CC) $(CFLAGS) -c $^ -o $@
-
-list.o: ./source/list.c
-	$(CC) $(CFLAGS) -c $^ -o $@
 
 .PHONY: testrun
 testrun: LC.x
@@ -50,6 +42,6 @@ testrun: LC.x
 
 .PHONY: clean
 clean:
-	rm *.x
+	rm -rf *.x
 	rm -rf *.o
 	rm -rf *.log
