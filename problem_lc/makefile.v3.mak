@@ -1,9 +1,9 @@
 #------------------------------------------------------------------------------
 #
-# Makefile, approach 2
-# * CC redefine fixed
-# * implicit rule illustrated
-# * problem with header dependenices
+# Makefile, approach 3
+# * implicit rule for first dependency not for all
+# * dependency gather filtered
+# * pattern substitution
 #
 #------------------------------------------------------------------------------
 #
@@ -12,11 +12,13 @@
 #
 #------------------------------------------------------------------------------
 
-# make CC=clang CFLAGS="-g -O0" -f makefile.v2.mak
-# make -f makefile.v2.mak clean
-# make -f makefile.v2.mak
-# make -f makefile.v2.mak testrun
-# make -f makefile.v2.mak clean
+# make CC=clang CFLAGS="-g -O0" -f makefile.v3.mak
+# make -f makefile.v3.mak clean
+# make -f makefile.v3.mak
+# touch include/cache.h
+# make -f makefile.v3.mak
+# make -f makefile.v3.mak testrun
+# make -f makefile.v3.mak clean
 
 ifeq ($(origin CC),default)
   CC = gcc
@@ -31,15 +33,26 @@ override CFLAGS += $(COMMONINC)
 
 CSRC = LCmain.c source/cache.c source/hash.c source/list.c
 COBJ = LCmain.o cache.o hash.o list.o
-
-%.o : source/%.c
-	$(CC) $(CFLAGS) -c $^ -o $@
+DEPS = $(COBJ:.o=.d)
 
 .PHONY: all
 all: LC.x
 
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
+-include $(DEPS)
+endif
+
 LC.x: $(COBJ)
 	$(CC) $^ -o $@ $(LDFLAGS)
+
+%.o : source/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.d : source/%.c
+	$(CC) -E $(CFLAGS) $< -MM -MT $(@:.d=.o) > $@
+
+%.d : %.c
+	$(CC) -E $(CFLAGS) $< -MM -MT $(@:.d=.o) > $@
 
 .PHONY: testrun
 testrun: LC.x
@@ -51,3 +64,4 @@ clean:
 	rm -rf *.x
 	rm -rf *.o
 	rm -rf *.log
+	rm -rf *.d
