@@ -20,7 +20,7 @@ typedef int CacheValueType;
 struct cache;
 
 // constructor
-struct cache *create_cache(size_t size);
+struct cache *create_cache(int size);
 
 // This function adds the value to cache returns 1 if hit, 0 if miss
 int cache(struct cache *cch, CacheValueType value);

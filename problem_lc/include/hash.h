@@ -23,13 +23,13 @@ struct node;
 typedef struct node *THashContent;
 
 // Hashed key type
-typedef size_t THashValue;
+typedef int THashValue;
 
 // Hash map type
 typedef struct table TMap;
 
 // creates a list with specified size and returns the link to it
-TMap *create_table(size_t size);
+TMap *create_table(int size);
 
 // deletes table
 void delete_table(TMap *table);

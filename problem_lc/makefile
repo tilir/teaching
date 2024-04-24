@@ -13,7 +13,7 @@
 #
 #------------------------------------------------------------------------------
 
-# make CC=clang CFLAGS="-g -O0"
+# make FLAGS="-g -O0"
 # make clean
 # make
 # make testrun
@@ -45,3 +45,4 @@ clean:
 	rm *.x
 	rm -rf *.o
 	rm -rf *.log
+

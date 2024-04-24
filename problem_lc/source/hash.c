@@ -9,13 +9,14 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "hash.h"
-#include "list.h"
 #include <assert.h>
 #include <malloc.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdio.h>
+
+#include "hash.h"
+#include "list.h"
 
 typedef struct hashnode {
   THashContent cont;
@@ -26,14 +27,14 @@ typedef struct hashnode {
 struct table {
   t_node **cells;
   t_node *accumulating_list;
-  size_t size;
+  int size;
 };
 
-static size_t get_hash(TMap *table, THashValue value);
+static unsigned get_hash(TMap *table, unsigned value);
 
 static void delete_chain(t_node *head);
 
-TMap *create_table(size_t size) {
+TMap *create_table(int size) {
   t_node *cur = NULL;
   TMap *tbl = NULL;
 
@@ -52,7 +53,7 @@ TMap *create_table(size_t size) {
 
   cur = tbl->accumulating_list;
 
-  for (size_t i = 0; i < size - 1; ++i) {
+  for (int i = 0; i < size - 1; ++i) {
     cur->next = (t_node *)calloc(1, sizeof(t_node));
     if (!cur->next)
       return NULL;
@@ -62,10 +63,12 @@ TMap *create_table(size_t size) {
   return tbl;
 }
 
-static size_t get_hash(TMap *table, THashValue value) {
-  const double a = 0.6180339887;
-  size_t pos = 0;
-  pos = (int)table->size * ((a * (value)) - (int)((a * (value))));
+static unsigned get_hash(TMap *table, unsigned value) {  
+  unsigned pos = 0;
+  assert(table);
+  pos = (value * 2654435761ull) % table->size;
+  assert(pos >= 0);
+  assert(pos < table->size);
   return pos;
 }
 
@@ -80,16 +83,19 @@ static void delete_chain(t_node *head) {
 }
 
 void delete_table(TMap *tbl) {
-  for (size_t i = 0; i < tbl->size; ++i)
+  assert(tbl);
+  for (int i = 0; i < tbl->size; ++i)
     delete_chain(tbl->cells[i]);
- 
+
   free(tbl->cells);
   free(tbl->accumulating_list);
   free(tbl);
 }
 
 void add_value(TMap *table, THashContent cont, THashValue value) {
-  size_t position = get_hash(table, value);
+  int position;
+  assert(table);
+  position = get_hash(table, value);
   t_node *old_head = table->cells[position];
   table->cells[position] = table->accumulating_list;
   table->accumulating_list = table->accumulating_list->next;
@@ -99,11 +105,13 @@ void add_value(TMap *table, THashContent cont, THashValue value) {
 }
 
 THashContent delete_cell(TMap *table, THashValue value) {
-  size_t position = get_hash(table, value);
+  int position;
   t_node *cur = NULL;
   t_node *prev = NULL;
   THashContent save = NULL;
 
+  assert(table);
+  position = get_hash(table, value);
   cur = table->cells[position];
 
   while (cur != NULL) {
@@ -129,7 +137,9 @@ THashContent delete_cell(TMap *table, THashValue value) {
 }
 
 THashContent search_cell(TMap *table, THashValue value) {
-  size_t position = get_hash(table, value);
+  int position;
+  assert(table);
+  position = get_hash(table, value);
   t_node *cur = table->cells[position];
   while (cur != NULL) {
     if (cur->value == value)
@@ -143,7 +153,7 @@ static void print_hash_list(t_node *head) {
   t_node *cur = head;
 
   while (cur != NULL) {
-    printf("|| value: %lu ", cur->value);
+    printf("|| value: %d ", cur->value);
     cur = cur->next;
   }
 
@@ -152,7 +162,7 @@ static void print_hash_list(t_node *head) {
 
 void print_hash_table(const TMap *table) {
   assert(table);
-  printf("table size: %lu\n", table->size);
+  printf("table size: %d\n", table->size);
   for (int i = 0; i < table->size; ++i) {
     if (table->cells[i] != NULL) {
       printf("//////////////////////////////\n");

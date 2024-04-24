@@ -21,7 +21,7 @@ typedef struct list List;
 typedef struct node Node;
 
 // creates list or returns NULL
-List *create_list(size_t number_of_elements);
+List *create_list(int number_of_elements);
 
 // moves node to list head
 void move_to_head(List *list, Node *new_head);

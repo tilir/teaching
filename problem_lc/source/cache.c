@@ -12,6 +12,7 @@
 #include "cache.h"
 #include "hash.h"
 #include "list.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,8 +21,10 @@ struct cache {
   struct list *lst;
 };
 
-struct cache *create_cache(size_t size) {
+struct cache *create_cache(int size) {
   struct cache *cch = (struct cache *)calloc(1, sizeof(struct cache));
+  if (!cch)
+    return NULL;
   cch->tbl = create_table(size);
   cch->lst = create_list(size);
   return cch;
@@ -30,6 +33,7 @@ struct cache *create_cache(size_t size) {
 int cache(struct cache *cch, CacheValueType value) {
   struct node *nd; // C90 style, but problem_LC requires it...
 
+  assert(cch);
   nd = search_cell(cch->tbl, value);
 
   // if the suitable cell found just move it to the head

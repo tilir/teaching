@@ -9,36 +9,36 @@
 //
 //-----------------------------------------------------------------------------
 
-#include "cache.h"
-#include "hash.h"
 #include <stdio.h>
+#include "cache.h"
 
 int main(int argc, char **argv) {
-  size_t m, n;
-  size_t num_hit = 0;
+  int m, n;
+  int num_hit = 0;
   struct cache *cch;
   int res;
 
-  res = scanf("%lu%lu", &m, &n);
+  res = scanf("%d%d", &m, &n);
   if (!res) {
-    fprintf(stderr, "Usage: %s <m> <n> <n elts...>", argv[0]);
+    fprintf(stderr, "Usage: %s <m> <n> <n elts...>\n", argv[0]);
     return 1;
   }
 
   cch = create_cache(m);
 
-  for (size_t i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     int next;
     res = scanf("%d", &next);
     if (!res) {
-      fprintf(stderr, "Usage: %s <m> <n> <n elts...>", argv[0]);
+      fprintf(stderr, "Failed to read %d out of %d elements\n", i, n);
+      fprintf(stderr, "Usage: %s <m> <n> <n elts...>\n", argv[0]);
       return 1;
     }
 
     num_hit += cache(cch, next);
   }
 
-  printf("%lu\n", num_hit);
+  printf("%d\n", num_hit);
 
   delete_cache(cch);
 }
