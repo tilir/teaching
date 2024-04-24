@@ -42,7 +42,7 @@ testrun: LC.x
 	@if diff -w all.log $(TESTS)/corr.log; then echo "Tests pass"; else echo "Tests failed"; fi
 
 clean:
-	rm *.x
+	rm -rf *.x
 	rm -rf *.o
 	rm -rf *.log
 
