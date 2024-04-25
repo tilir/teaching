@@ -36,9 +36,11 @@ target_include_directories(lclib PUBLIC "include")
 add_executable(LC.x LCmain.c)
 target_link_libraries(LC.x lclib)
 
-add_test(
-  NAME run_externals
-  COMMAND bash -c "${CMAKE_SOURCE_DIR}/runtests.sh ${TESTS}"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-
-set_tests_properties(run_externals PROPERTIES DEPENDS LC.x)
+file(GLOB testfiles "Tests/*.dat")
+foreach(file ${testfiles})
+  add_test(
+    NAME ${file}
+    COMMAND bash -c "${CMAKE_SOURCE_DIR}/runtest.sh ${file} ./LC.x"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set_tests_properties(${file} PROPERTIES DEPENDS LC.x)
+endforeach()

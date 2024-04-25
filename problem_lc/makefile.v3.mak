@@ -12,12 +12,15 @@
 #
 #------------------------------------------------------------------------------
 
-# make CC=clang CFLAGS="-g -O0" -f makefile.v3.mak
-# make -f makefile.v3.mak clean
+# make OUT_O_DIR=debug CC=clang CFLAGS="-g -O0" -f makefile.v3.mak
 # make -f makefile.v3.mak
 # touch include/cache.h
 # make -f makefile.v3.mak
+# make OUT_O_DIR=debug -f makefile.v3.mak
 # make -f makefile.v3.mak testrun
+# make -f makefile.v3.mak testrun -j4
+# make OUT_O_DIR=debug -f makefile.v3.mak testrun -j4
+# make OUT_O_DIR=debug -f makefile.v3.mak clean
 # make -f makefile.v3.mak clean
 
 ifeq ($(origin CC),default)
@@ -25,48 +28,49 @@ ifeq ($(origin CC),default)
 endif
 
 CFLAGS ?= -O2
+OUT_O_DIR ?= build
 COMMONINC = -I./include
 TESTS = ./Tests
 SRC = ./source
+ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 override CFLAGS += $(COMMONINC)
 
 CSRC = LCmain.c source/cache.c source/hash.c source/list.c
-COBJ = LCmain.o cache.o hash.o list.o
+
+# reproducing source tree in object tree
+COBJ := $(addprefix $(OUT_O_DIR)/,$(CSRC:.c=.o))
 DEPS = $(COBJ:.o=.d)
 
 .PHONY: all
-all: LC.x
+all: $(OUT_O_DIR)/LC.x
 
-LC.x: $(COBJ)
+$(OUT_O_DIR)/LC.x: $(COBJ)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-%.o : source/%.c
+# static pattern rule to not redefine generic one
+$(COBJ) : $(OUT_O_DIR)/%.o : %.c
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.d : source/%.c
-	$(CC) -E $(CFLAGS) $< -MM -MT $(@:.d=.o) > $@
-
-%.d : %.c
+$(DEPS) : $(OUT_O_DIR)/%.d : %.c
+	@mkdir -p $(@D)
 	$(CC) -E $(CFLAGS) $< -MM -MT $(@:.d=.o) > $@
 
 TESTFILES=$(wildcard $(TESTS)/*.dat)
 
 .PHONY: testrun
-testrun: LC.x $(TESTFILES)
+testrun: $(TESTFILES)
 
 .PHONY: $(TESTFILES)
-$(TESTFILES):
-	@./runtest.sh $@
+$(TESTFILES): $(OUT_O_DIR)/LC.x
+	@$(ROOT_DIR)/runtest.sh $@ $(OUT_O_DIR)/LC.x
 
 .PHONY: clean
 clean:
-	rm -rf *.x
-	rm -rf *.o
-	rm -rf *.log
-	rm -rf *.d
+	rm -rf $(COBJ) $(DEPS) $(OUT_O_DIR)/*.x $(OUT_O_DIR)/*.log
 
-# targets which we have no need to rebuild
+# targets which we have no need to recollect deps
 NODEPS = clean
 
 ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))

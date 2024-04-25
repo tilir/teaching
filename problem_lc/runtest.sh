@@ -1,11 +1,17 @@
 #!/bin/bash
+#------------------------------------------------------------------------------
+#
+# Single test runner
+#
+#------------------------------------------------------------------------------
 
 TEST=$1
+TESTER=$2
 
 ANS=${TEST%.*}.ans
 NAME=$(basename $TEST)
 
-./LC.x < $TEST > $NAME.log
+eval ${TESTER} < $TEST > $NAME.log
 
 DIFF=$(diff -w $NAME.log ${ANS})
 
