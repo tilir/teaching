@@ -43,7 +43,7 @@ LC.x: $(COBJ)
 
 .PHONY: testrun
 testrun: LC.x
-	./runtests.sh $(TESTS)
+	@./runtests.sh $(TESTS)
 
 .PHONY: clean
 clean:

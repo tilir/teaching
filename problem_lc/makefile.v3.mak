@@ -38,10 +38,6 @@ DEPS = $(COBJ:.o=.d)
 .PHONY: all
 all: LC.x
 
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
--include $(DEPS)
-endif
-
 LC.x: $(COBJ)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
@@ -54,9 +50,14 @@ LC.x: $(COBJ)
 %.d : %.c
 	$(CC) -E $(CFLAGS) $< -MM -MT $(@:.d=.o) > $@
 
+TESTFILES=$(wildcard $(TESTS)/*.dat)
+
 .PHONY: testrun
-testrun: LC.x
-	./runtests.sh $(TESTS)
+testrun: LC.x $(TESTFILES)
+
+.PHONY: $(TESTFILES)
+$(TESTFILES):
+	@./runtest.sh $@
 
 .PHONY: clean
 clean:
@@ -64,3 +65,10 @@ clean:
 	rm -rf *.o
 	rm -rf *.log
 	rm -rf *.d
+
+# targets which we have no need to rebuild
+NODEPS = clean
+
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
+include $(DEPS)
+endif
