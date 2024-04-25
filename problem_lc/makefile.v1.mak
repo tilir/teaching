@@ -45,8 +45,16 @@ list.o: ./source/list.c
 
 .PHONY: testrun
 testrun: LC.x
-	@for i in $(TESTS)/*.dat; do echo "$$(basename $${i})"; ./LC.x < $${i}; echo ""; done > all.log
-	@if diff -w all.log $(TESTS)/corr.log; then echo "Tests pass"; else echo "Tests failed"; fi
+	@for i in $(TESTS)/*.dat; do \
+	  echo "$$(basename $${i})"; \
+	  ./LC.x < $${i}; \
+	  echo ""; \
+	done > all.log
+	@if diff -w all.log $(TESTS)/corr.log; then \
+	  echo "Tests pass"; \
+	else \
+	  echo "Tests failed"; \
+	fi
 
 .PHONY: clean
 clean:
